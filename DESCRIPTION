@@ -1,12 +1,22 @@
 Package: polygrowth
 Title: Bacterial Growth Curve Parameters from Polynomial Model
 Version: 0.0.0.9000
-Authors@R: 
+Authors@R: c(
     person("Jifan", "Wang", , "jifan.wang@tufts.edu", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+           comment = c(ORCID = "YOUR-ORCID-ID")),
+    person("Kathryn", "Barger", role = "aut"))
+Depends: 
+    dplyr,
+    R (>= 3.4.0)
+Description: A package takes data from microplate reader and estimates bacterial grwoth parameters 
+  using a 4th-degree polynomial regression model.
+License: use_gpl3_license()
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
+Imports: 
+    ggplot2,
+    tidyr
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
