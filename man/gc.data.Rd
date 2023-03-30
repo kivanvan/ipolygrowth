@@ -15,16 +15,20 @@ gc.data(data, var.OD, min = NULL, max = NULL, interval = NULL)
 
 \item{max}{The end-time of bacterial growth measurement}
 
-\item{interval}{Time interval of data collections. Make sure the units are the same in all three time inputs.}
+\item{interval}{Time interval of data collections. Make sure the units are the same in all three
+time inputs.}
 }
 \value{
 A data set with 4 time variables: t, t^2, t^3, and t^4.
 }
 \description{
-This function convert raw data from microplate readers to a long format time-structured data set that can be used to fit polynomial growth curve.
+This function convert raw data from microplate readers to a long format time-structured data set
+that can be used to fit polynomial growth curve.
 }
 \details{
-This function only takes time-structured data, i.e. OD needs to be measured at the same time interval. It will provide a long format data set with 4 time variables: t, t^2, t^3, and t^4. Missing data is allowed.
+This function only takes time-structured data, i.e. OD needs to be measured at the same time
+interval. It will provide a long format data set with 4 time variables: t, t^2, t^3, and t^4.
+Missing data is allowed.
 }
 \examples{
 df.test <- gc.data(df, "C1", min = 20/60, max = 1100/60, interval = 20/60)

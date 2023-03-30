@@ -1,0 +1,177 @@
+---
+title: "How to use polygrowth"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{How to use polygrowth}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+[[add a toc]]
+[[Change plot size]]
+[[Change print format for tables]]
+
+
+## Introduction
+
+The polygrowth package is designed to estimate bacterial growth curve parameters using polynomial model. Growth curve parameters are estimated from 4th-degree polynomial models. The package is capable of taking either a single sample or multiple samples, with or without replicates. We refer the single sample to one experimental condition and multiple samples to different experimental conditions throughout this vignette. Although the package is designed for bacterial data, the use of this package may be expanded to any growth curve data.  
+
+We will demonstrate examples with both single and multiple samples in this vignette.  
+
+To use this package, we need to start with attaching the polygrowth package.  
+
+```{r setup}
+#devtools::install("C://Users/jwang24/Documents/R/polygrowth")                                       #[remove when package is ready]
+library(polygrowth)
+library(dplyr)
+library(ggplot2)
+```
+
+
+### Sample data
+
+We will use the bacterial growth data from [growthrates package](https://cran.r-project.org/web/packages/growthrates/index.html) for demonstration. This data contains 3 strains of bacteria and 12 levels of antibiotics tetracycline concentration. There are 2 replicates for each strain-concentration combination. For more details about this data, see https://cran.r-project.org/web/packages/growthrates/vignettes/Introduction.html.  
+
+Let's load the data and check its structure:  
+
+```{r}
+df.gr <- growthrates::bactgrowth
+str(df.gr)
+```
+
+We can also take a look at the first few rows of the data:  
+
+```{r}
+head(df.gr)
+```
+
+Let's plot the data:
+
+```{r, fig.height=8, fig.width=12}
+ggplot()+
+  geom_point(data = df.gr, aes(x = time, y = value, color = factor(replicate)))+ #plot observed data
+  facet_wrap(~ strain + conc)+
+  labs(color = "replicate")+
+  theme_bw()
+```
+
+
+### Requirement of data structure for polygrowth
+
+`polygrowth` functions require the input data to be in long format. The basic requirement is to have a numeric time variable along with a measure variable for the growth curve. If you have multiple samples, there needs to be a variable for the identifier in data as well. If your identifier stays in a metadata, you need to merge it to the input data. Indication of replicates is not necessary in `polygrowth`, but it is probably beneficial for reproducibility.  
+
+Before using `polygrowth`, also make sure that the values of your time variable are in the same unit. We do not check the time scale in the package as it can be a large range.  
+
+The sample data is a good example, and it is ready to use. We will show another example for single sample in the section below.  
+
+
+## When you have a single sample
+
+We will use the `pg_singlesample()` function to handle the data with just one experimental condition. Since the `growthrates` data contains multiple experimental conditions, we need to subset the data first. In the following example, we will use strains from donor (D) under 15.63 mg(?). To subset the data, we need to load the `dplyr` package. For a cleaner look of the data, we will remove variables `strain` and `conc` to avoid confusion.  
+
+```{r}
+df.singlesample <- df.gr %>% filter(strain == "D", conc == 15.63) %>% select(-strain, -conc)
+
+str(df.singlesample)
+table(df.singlesample$replicate) # see how many replicates we have
+```
+
+You can see that there are 2 replicates in the data. And it is fine to have that information in the input data. Let's take a look at the data again.  
+
+```{r, results='asis'}
+knitr::kable(head(df.singlesample))
+```
+
+Now we can use this data in the `pg_singlesample()` function and save the results. The output of `pg_singlesample()` contains a table of estimates of growth parameters, the polynomial model deriving the estimates, a table of $\beta$ coefficients, and a table of fitted values with time. All components can be viewed by calling from the list. We will show the table of estimates below.  
+
+```{r, results='asis'}
+out.singlesample <- pg_singlesample(df.singlesample, "time", "value")
+knitr::kable(out.singlesample$estimates)
+```
+
+We can use the fitted values and the original data to plot our results.  
+
+```{r, fig.height=4, fig.width=6}
+
+ggplot()+
+  geom_point(data = df.singlesample, aes(x = time, y = value, color = factor(replicate)))+ #plot observed data
+  geom_line(data = out.singlesample$fitted, aes(x = time, y = fit))+ #plot fitted line
+  labs(color = "replicate")+
+  scale_x_continuous(n.breaks = 10)+
+  scale_y_continuous(n.breaks = 7)+
+  theme_bw()
+```
+
+By changing the percent of range, we will get a different estimates of the maximum value in the exponential phase and its corresponding time. The table below shows the estimates when changing the cut-off to 1% of the range. [[Needs more explanation]] The decision is based on experience. In our previous study, 0.2% of the total range was a nice cut-off; thus, we use it as the default in `polygrowth`.
+
+```{r, results='asis'}
+out.singlesample2 <- pg_singlesample(df.singlesample, "time", "value", max.od.select = 1/100)
+knitr::kable(out.singlesample2$estimates)
+```
+
+
+
+## When you have multiple samples 
+
+Once you have the data in the required format (i.e. long format with identifier variable(s)), it is the same workflow for data having multiple samples. The only difference is that you will use the `pg_multisample()` function. We will demonstrate examples with different numbers of identifiers in this section.  
+
+### One experimental condition identifier
+
+To get one identifier, we need to subset the data. In this example, we will use all data from the recipients (R in `df.gr$strain`). As in the previous example, the variable strain will be removed to avoid confusion.  
+
+```{r}
+df.gr.r <- df.gr %>% filter(strain == "R") %>% select(-strain)
+
+str(df.gr.r)
+table(df.gr.r$replicate, df.gr.r$conc)
+```
+
+We can see that there are 12 different concentrations in this data, and the variable `conc` will be our identifier. Note that there is no default value in `pg_multisample()`, so we need to specify our cut-off values for each condition. The cut-off can be different for each condition, but we will use the same cut-off (0.2) for simplicity.  
+
+```{r, results='asis'}
+threshold <- rep(0.02/100, length(unique(df.gr.r$conc)))
+out.multi.r <- pg_multisample(df.gr.r, "conc", "time", "value", threshold)
+knitr::kable(out.multi.r$estimates)
+```
+
+As you can see from the above table, the parameter estimates table is ordered by concentration levels. Other components in results will be in the sample order. We can plot the data using the same approach to check our results.
+
+```{r, fig.height=4, fig.width=6}
+ggplot()+
+  geom_point(data = df.gr.r, aes(x = time, y = value, color = factor(replicate)))+ #plot observed data
+  geom_line(data = out.multi.r$fitted, aes(x = time, y = fit))+ #plot fitted line
+  facet_wrap(~conc)+
+  labs(color = "replicate")+
+  theme_bw()
+```
+
+
+### Two or more experimental condition identifiers
+
+In this section, we will use the full growthrates data. As a reminder, variables `strain` and `conc` will be the two condition identifiers. We will keep the threshold for maximum detection as 0.2 in this example.
+
+```{r, results='asis'}
+expcondition <- expand.grid(c(unique(df.gr$conc), unique(df.gr$strain)))
+threshold <- rep(0.02/100, nrow(expcondition))
+out.multi.f <- pg_multisample(df.gr, c("strain", "conc"), "time", "value", threshold)
+knitr::kable(out.multi.f$estimates)
+```
+
+We can use the same method to plot the fitted growth curve.
+
+```{r , fig.height=8, fig.width=12}
+ggplot()+
+  geom_point(data = df.gr, aes(x = time, y = value, color = factor(replicate)))+ #plot observed data
+  geom_line(data = out.multi.f$fitted, aes(x = time, y = fit))+ #plot fitted line
+  facet_wrap(~ strain + conc)+
+  labs(color = "replicate")+
+  theme_bw()
+```
+

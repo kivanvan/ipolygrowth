@@ -4,10 +4,10 @@
 \alias{gc.parameter}
 \title{Growth curve parameters}
 \usage{
-gc.parameter(model.curve, gcdata, min, max, threshold.pct = 0.2/100)
+gc.parameter(model, gcdata, min, max, threshold.pct = 0.2/100)
 }
 \arguments{
-\item{model.curve}{A polynomial regression model}
+\item{model}{A polynomial regression model}
 
 \item{gcdata}{A data set from gc.data()}
 
@@ -15,22 +15,30 @@ gc.parameter(model.curve, gcdata, min, max, threshold.pct = 0.2/100)
 
 \item{max}{The end-time of bacterial growth measurement}
 
-\item{threshold.pct}{The percentage of the log OD range that determines the maximum difference in log OD for max OD calculation.
+\item{threshold.pct}{The percentage of the log OD range that determines the maximum difference
+in log OD for max OD calculation.
 The default is 0.2\%.}
 }
 \value{
 A data set with growth curve parameters:
-peak growth rate, time to peak growth rate, start time of peak growth (if not at the starting time), log of max OD (observed and predicted), time to max OD (observed and predicted), doubling time, log OD in the beginning (observed and predicted), log OD at the end (observed and predicted), and beta coefficients of time from polynomial regression.
+peak growth rate, time to peak growth rate, start time of peak growth (if not at the starting
+time), log of max OD (observed and predicted), time to max OD (observed and predicted), doubling
+time, log OD in the beginning (observed and predicted), log OD at the end (observed and predicted),
+and beta coefficients of time from polynomial regression.
 
-If replicates are imported, the observed log of max OD, observed beginning log OD and end log OD will be calculated as the mean across replicates.
+If replicates are imported, the observed log of max OD, observed beginning log OD and end log OD
+will be calculated as the mean across replicates.
 
 Note that peak growth rate is back calculated to the original OD unit.
 }
 \description{
-This function takes a polynomial regression and calculates a series of bacterial growth curve parameters.
+This function takes a polynomial regression and calculates a series of bacterial growth curve
+parameters.
 }
 \details{
-The peak growth time is calculated as the solution of the second derivative of the polynomial model that is between the start and end time point. The peak growth rate is the slope of polynomial curve at the peak growth time.
+The peak growth time is calculated as the solution of the second derivative of the polynomial
+model that is between the start and end time point. The peak growth rate is the exponentiation of
+the slope of polynomial curve at the peak growth time.
 }
 \examples{
  df.test.result <- gc.parameter(lm1, df.test, 20/60, 1100/60)

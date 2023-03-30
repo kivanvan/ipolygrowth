@@ -16,7 +16,8 @@ A model object
 Fit polynomial growth curve
 }
 \details{
-This function fits polynomial growth curve and outputs a model object that can be used for parameter estimation and plot.
+This function fits polynomial growth curve and outputs a model object that can be used for
+parameter estimation and plot.
 }
 \examples{
 lm1 <- gc.poly(df.test)
