@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/reference/test_package.html#special-files
 
 library(testthat)
-library(polygrowth)
+library(ipolygrowth)
 
-test_check("polygrowth")
+test_check("ipolygrowth")
