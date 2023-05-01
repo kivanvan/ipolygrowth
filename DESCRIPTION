@@ -3,7 +3,7 @@ Title: Bacterial Growth Curve Parameters from Polynomial Model
 Version: 0.0.0.9000
 Authors@R: c(
     person("Jifan", "Wang", , "jifan.wang@tufts.edu", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID")),
+           comment = c(ORCID = "0000-0001-9720-8913")),
     person("Kathryn", "Barger", role = "aut"))
 Depends: 
     R (>= 3.4.0)
@@ -12,7 +12,7 @@ Description: A package takes data from microplate reader and estimates bacterial
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 Imports: 
     dplyr,
     tidyr,

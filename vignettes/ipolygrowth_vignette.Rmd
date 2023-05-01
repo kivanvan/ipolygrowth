@@ -1,0 +1,211 @@
+---
+title: "How to use ipolygrowth"
+output: 
+  rmarkdown::html_vignette:
+  toc: true
+vignette: >
+  %\VignetteIndexEntry{How to use ipolygrowth}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+
+## Introduction
+
+The `ipolygrowth` package is designed to estimate bacterial growth curve parameters using polynomial model.[1] Growth curve parameters are estimated from 4th-degree polynomial models.[2] The package is capable of taking either a single sample or multiple samples, with or without replicates. We refer the single sample to one experimental condition and multiple samples to different experimental conditions throughout this vignette. Although the package is designed for bacterial data, the use of this package may be expanded to any growth curve data.  
+
+
+### A brief summary of method
+
+We first fit data from each sample into a 4th-degree polynomial model. Then we take the second derivative of the model to estimate the peak growth time. The peak growth rate is calculated as the first derivative of the model at the peak growth time. Doubling time at the peak growth time is calculated using the equation: $\frac{ln(2)}{peak\ growth\ rate}$. We estimate the lag time as the time when the line of intercept from the polynomial model intersects with the linear line of peak growth at peak growth time. We look for the difference [[in each time interval]] that is smaller than the set threshold to estimate the maximum of y and its time. If no difference is smaller than the threshold, the maximum value on the curve is reported. For more details on the method, please see [[our publication]].   
+
+
+## Examples
+
+We will demonstrate examples with both single and multiple samples in this vignette.  
+
+To use this package, we need to start with attaching the `ipolygrowth` package.  
+
+```{r setup, message=FALSE}
+#devtools::install("C://Users/jwang24/Documents/R/polygrowth")                                       #[remove when package is ready]
+library(ipolygrowth)
+library(dplyr)
+library(kableExtra) # for RMarkdown table output
+library(ggplot2)
+```
+
+
+### Sample data
+
+We will use the bacterial growth data from [growthrates package](https://cran.r-project.org/web/packages/growthrates/index.html) for demonstration.[3] This data contains 3 strains of bacteria and 12 levels of antibiotics tetracycline concentration. There are 2 replicates for each strain-concentration combination. For more details about this data, see https://cran.r-project.org/web/packages/growthrates/vignettes/Introduction.html.  
+
+Let's load the data and check its structure:  
+
+```{r}
+df.gr <- growthrates::bactgrowth
+str(df.gr)
+```
+
+We can also take a look at the first few rows of the data:  
+
+```{r}
+head(df.gr)
+```
+
+Let's plot the data:
+
+```{r, fig.height=10, fig.width=13}
+ggplot()+
+  geom_point(data = df.gr, aes(x = time, y = value, color = factor(replicate)))+ #plot observed data
+  facet_wrap(~ strain + conc)+
+  labs(color = "replicate")+
+  theme_bw()
+```
+
+
+### Requirement of data structure for ipolygrowth
+
+`ipolygrowth` functions require the input data to be in __long format__. The basic requirement is to have a numeric time variable along with a numeric measure variable of the growth curve. If you have multiple samples, there needs to be variable(s) to uniquely identify each sample in data. The identifier can be more than one variable if necessary. If your identifier stays in a metadata, you need to merge it to the input data. Indication of replicates is not necessary in `ipolygrowth`, but it is probably beneficial to keep records for reproducibility.  
+
+Before using `ipolygrowth`, also make sure that the values of your time variable are in the same unit. We do not check the time scale in this package, but it will impact the validity of your estimates.  
+
+The sample data is a ready-to-use example with multiple samples. For single sample, you will see an example in the below section.  
+
+
+## When you have a single sample
+
+We will use the `ipg_singlesample()` function to handle the data with just one experimental condition. Since the `growthrates` data contains multiple experimental conditions, we need to subset the data first. In the following example, we will use strains from donor (D) under 15.63 mg(?). To subset the data, we need to load the `dplyr` package. For a cleaner look of the data, we will remove variables `strain` and `conc` to avoid confusion.  
+
+```{r}
+df.singlesample <- df.gr %>% filter(strain == "D", conc == 15.63) %>% select(-strain, -conc) # subset data
+str(df.singlesample) # data overview
+table(df.singlesample$replicate) # see how many replicates we have
+```
+
+You can see that there are 2 replicates in the data. It is fine to leave the replicate variable in the input data although we will not use it in our estimation. Let's take a look at the data again.  
+
+```{r}
+head(df.singlesample)
+```
+
+Now we can use this data in the `ipg_singlesample()` function and save the results. The output of `ipg_singlesample()` contains a table of estimates of growth parameters, the polynomial model deriving the estimates, a table of $\beta$ coefficients, and a table of fitted values with time. All components can be viewed by calling from the list output. Here, we will only show the table of estimates below.  
+
+```{r, results='asis'}
+out.singlesample <- ipg_singlesample(df.singlesample, "time", "value")
+out.singlesample$estimates %>%
+  kable %>%
+  kable_styling("striped", full_width = F) # format table
+```
+
+\newline  
+
+We can use the fitted values and the original data to plot our results.  
+
+```{r, fig.height=3, fig.width=4}
+ggplot()+
+  geom_point(data = df.singlesample, aes(x = time, y = value, color = factor(replicate)))+ #plot observed data
+  geom_line(data = out.singlesample$fitted, aes(x = time, y = fit))+ #plot fitted line
+  labs(color = "replicate")+
+  scale_x_continuous(n.breaks = 10)+
+  scale_y_continuous(n.breaks = 7)+
+  theme_bw()
+```
+
+
+### Altering threshold for max in y
+
+You may noticed the message about considering a larger threshold in the above section. Every time we find no difference between two successive time intervals smaller than the threshold, you will get this message. Depending on your data, it can be reasonable to not alter the threshold in some situations, for example, when you did not observe the end of exponential phase. It is highly recommended to plot the data before changing the threshold for max y estimation.
+
+In our function, we expect an input of `max.y.select` less than 1. This input will be multiplied with the range of your dependent variable for the threshold in max y estimation. By changing this input, we may get a different estimates of the maximum value in the exponential phase and its corresponding time. The table below shows the estimates when changing the cut-off from 0.2% to 1% of the range. The decision is based on experience and/or data visualization. In our previous study[4], 0.2% of the total range was a nice cut-off; thus, we use it as the default in `ipolygrowth`.  
+
+```{r, results='asis'}
+out.singlesample2 <- ipg_singlesample(df.singlesample, "time", "value", max.y.select = 1/100)
+out.singlesample2$estimates %>%
+  kable %>%
+  kable_styling("striped", full_width = F) # format table
+```
+
+<br>  
+
+
+## When you have multiple samples 
+
+Once you have the data in the required format (i.e. long format with identifier variable(s)), you can use the same workflow for multiple samples. The only difference is that you will use the `ipg_multisample()` function. We will demonstrate examples with different numbers of identifiers in this section.  
+
+
+### One experimental condition identifier
+
+To get one identifier, we need to subset the data. In this example, we will use all data from the recipients (R in `df.gr$strain`). As in the previous example, the variable strain will be removed to avoid confusion.  
+
+```{r}
+df.gr.r <- df.gr %>% filter(strain == "R") %>% select(-strain) # subset data
+str(df.gr.r) # data overview
+table(df.gr.r$replicate, df.gr.r$conc) # check the replicate of each sample
+```
+
+We can see that there are 12 different concentrations in this data. The variable `conc` will be our identifier. Note that there is no default value for max y estimation in `ipg_multisample()`, so we need to specify our cut-off values for each condition.The cut-off can be different for each condition, but if the same cut-off value will be applied across samples, you can only input one value for code efficiency. Below we will repeat the same cut-off (0.2) for demonstration purpose.  
+
+```{r, results='asis'}
+threshold <- rep(0.2/100, length(unique(df.gr.r$conc)))
+out.multi.r <- pg_multisample(df.gr.r, "conc", "time", "value", threshold)
+out.multi.r$estimates %>%
+  kable %>%
+  kable_styling("striped", full_width = F) %>% # format table
+  scroll_box(width = "800px", height = "300px") # add scroll bar
+```
+
+\newline  
+
+As you can see from the above table, you will get all growth curve parameter estimates in a single table. Each row represents a sample. We can plot the data using the same approach to check our results.
+
+```{r, fig.height=5, fig.width=8}
+ggplot()+
+  geom_point(data = df.gr.r, aes(x = time, y = value, color = factor(replicate)))+ # plot observed data
+  geom_line(data = out.multi.r$fitted, aes(x = time, y = fit))+ # plot fitted line
+  facet_wrap(~conc)+
+  labs(color = "replicate")+
+  theme_bw()
+```
+
+
+### Two or more experimental condition identifiers
+
+In this section, we will use the full `growthrates` data. As a reminder, variables `strain` and `conc` will be the two condition identifiers. We will keep the threshold for maximum detection as 0.2% in this example. You will find the use of a single cut-off input here as well. We will also hide the message on the max y threshold due to the large amount.
+
+```{r, results='asis', message=FALSE}
+out.multi.f <- pg_multisample(df.gr, c("strain", "conc"), "time", "value", 0.2/100)
+out.multi.f$estimates %>%
+  kable() %>%
+  kable_styling("striped", full_width = F) %>%
+  scroll_box(width = "800px", height = "300px")
+```
+
+We can use the same method to plot the fitted growth curve.
+
+```{r , fig.height=10, fig.width=13}
+ggplot()+
+  geom_point(data = df.gr, aes(x = time, y = value, color = factor(replicate)))+ #plot observed data
+  geom_line(data = out.multi.f$fitted, aes(x = time, y = fit))+ #plot fitted line
+  facet_wrap(~ strain + conc)+
+  labs(color = "replicate")+
+  theme_bw()
+```
+
+
+## Reference  
+
+1. Cross JH, Bradbury RS, Fulford AJ, Jallow AT, Wegmüller R, Prentice AM, Cerami C. Oral iron acutely elevates bacterial growth in human serum. Sci Rep. 2015 Nov 23;5:16670. doi: 10.1038/srep16670. PMID: 26593732; PMCID: PMC4655407.   
+
+2. ipolygrowth publication  
+
+3. Petzoldt T (2022). _growthrates: Estimate Growth Rates from Experimental Data_. R package version 0.8.4, <https://CRAN.R-project.org/package=growthrates>. 
+
+4. safe iron paper  
