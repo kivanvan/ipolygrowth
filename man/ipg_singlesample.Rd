@@ -31,9 +31,8 @@ The lag time is estimated as the time when the line of intercept from the polyno
 Difference in fitted value of y between two successive time intervals is compared to the selected threshold (the input percentage * range of y) sequentially to estimate the maximum of y and its time.
 }
 \examples{
+library(dplyr)
 data <- growthrates::bactgrowth
 df.singlesample <- data \%>\% dplyr::filter(strain == "D", conc == 0)
 out.singlesample <- ipg_singlesample(df.singlesample, "time", "value")
-
-
 }

@@ -3,10 +3,10 @@
 #' @description
 #' This function estimates growth parameters for a single sample. Technical replicates are allowed in the dataset.
 #'
-#' @param df.input Input data containing the time and dependent variable from a single sample. Data needs to be in long format.
+#' @param data Input data containing the time and dependent variable from a single sample. Data needs to be in long format.
 #' @param time.name Name of the time variable
 #' @param y.name Name of the dependent variable
-#' @param max.y.select A threshold for maximum detection of dependent variable in exponential phase. Default is 0.2%.
+#' @param epsilon A threshold for maximum detection of dependent variable in exponential phase. Default is 0.2%.
 #' This number will be multiplied by the range of the dependent variable to establish a threshold for maximum detection.
 #'
 #' @details
@@ -20,36 +20,37 @@
 #' @return A list that contains a table of estimates, the polynomial model, a table of beta coefficients, and a table of fitted values.
 #' Growth parameters include peak growth rate, peak growth time, lag time, max y (fit), max y time (fit), and doubling time at the peak growth.
 #'
+#' @importFrom rlang .data
+#'
 #' @examples
+#' library(dplyr)
 #' data <- growthrates::bactgrowth
 #' df.singlesample <- data %>% dplyr::filter(strain == "D", conc == 0)
 #' out.singlesample <- ipg_singlesample(df.singlesample, "time", "value")
+#' @export
 #'
 #'
-ipg_singlesample <- function(df.input, time.name, y.name, max.y.select = 0.2/100) {
-  stopifnot("Y is not found in the data" = !is.null(df.input[[y.name]]))
-  stopifnot("Y must be a numeric variable" = is.numeric(df.input[[y.name]]))
-  stopifnot("Time is not found in the data" = !is.null(df.input[[time.name]]))
-  stopifnot("Time must be a numeric variable" = is.numeric(df.input[[time.name]]))
-  # if (!is.numeric(df.input[[y.name]])) {
-  #   warning("Y needs to be numeric.")
-  # } else if (!is.numeric(df.input[[time.name]])) {
-  #   warning("Time needs to be numeric.")
-  # } else {
-      gcdata <- df.input %>%
+ipg_singlesample <- function(data, time.name, y.name, epsilon = 0.2/100) {
+  stopifnot("Y is not found in the data" = !is.null(data[[y.name]]))
+  stopifnot("Y must be a numeric variable" = is.numeric(data[[y.name]]))
+  stopifnot("Time is not found in the data" = !is.null(data[[time.name]]))
+  stopifnot("Time must be a numeric variable" = is.numeric(data[[time.name]]))
+
+  time <- fit <- NULL                                                                               # to avoid notes from CRAN check
+
+      gcdata <- data %>%
         dplyr::mutate(time = .data[[time.name]],
-                      # time := {{time.name}},
                       time_sq = time^2,
                       time_cb = time^3,
                       time_qt = time^4) %>%
         dplyr::arrange(time)
 
       ## polynomial model ##----
-      curve <- stats::lm(as.formula(paste(y.name, "~ time + time_sq + time_cb + time_qt")),
+      curve <- stats::lm(stats::as.formula(paste(y.name, "~ time + time_sq + time_cb + time_qt")),
                          data = gcdata)                                                             # 4th order polynomial regression (assumes independent obs)
 
       gcdata2 <- gcdata %>%
-        dplyr::select(time, any_of(y.name)) %>%
+        dplyr::select(time, tidyselect::any_of(y.name)) %>%
         stats::na.omit() %>%                                                                        # to avoid mismatch in length if any missing in y
         dplyr::mutate(fit = stats::predict(curve)) %>%
         dplyr::select(time, fit) %>%
@@ -64,8 +65,8 @@ ipg_singlesample <- function(df.input, time.name, y.name, max.y.select = 0.2/100
       tb.beta$B4 <- A4 <- as.numeric(stats::coef(curve)[5])
 
       tb.result <- data.frame(
-        peak.growth.rate = NA_real_, peak.growth.time = NA_real_, start.peak.growth = NA_real_,
-        fit.max.y = NA_real_, fit.max.y.time = NA_real_, doubling.time = NA_real_)
+        peak.growth.rate = NA_real_, peak.growth.time = NA_real_, doubling.time = NA_real_,
+        start.peak.growth = NA_real_, fit.max.y = NA_real_, fit.max.y.time = NA_real_)
 
 
       ## calculate peak growth rate ##----
@@ -75,7 +76,7 @@ ipg_singlesample <- function(df.input, time.name, y.name, max.y.select = 0.2/100
       x <- c(x.roots,0)                                                                             # add 0 to calculate the slope at 0
 
       pgr <- Re(eval(A1 + A2 * (2 * x) + A3 * (3 * x^2) + A4 * (4 * x^3)))                          # calculate growth rate (slope) at peak growth times (real number only)
-      max <- max(gcdata$time, na.rm = T)
+      max <- max(gcdata$time, na.rm = TRUE)
       pgr.index <- which(pgr == max(pgr[pgr>0 & Re(x) >= 0 & Re(x) <= max]))[1]                     # choose growth time with maximum growth rate and peak growth time between the start and end point
 
       tb.result$peak.growth.time <- pgt <- Re(x[pgr.index])                                         # peak growth time
@@ -96,8 +97,8 @@ ipg_singlesample <- function(df.input, time.name, y.name, max.y.select = 0.2/100
 
 
       ## calculate max y ##----
-      r <- gcdata %>% dplyr::select(any_of(y.name)) %>% range()                                     # get range of y
-      threshold <- (r[2] - r[1]) * max.y.select                                                     # calculate cutoff based on range
+      r <- gcdata %>% dplyr::select(tidyselect::any_of(y.name)) %>% range()                         # get range of y
+      threshold <- (r[2] - r[1]) * epsilon                                                          # calculate cutoff based on range
 
       if (any((gcdata2$diffOD < threshold) & (gcdata2$diffOD > 0), na.rm=TRUE)) {                   # look for difference in fitted y b/w 0 and threshold
 
@@ -107,17 +108,22 @@ ipg_singlesample <- function(df.input, time.name, y.name, max.y.select = 0.2/100
           temp.time <- gcdata2$time[(gcdata2$diffOD < threshold) & (gcdata2$diffOD > 0)]            # find all times when fitted y is b/w 0 and threshold
           temp <- temp.time[temp.time > tb.result$peak.growth.time][1]                              # select the first one that is later than the peak growth time
           tb.result$fit.max.y <- gcdata2$fit[gcdata2$time == temp]                                  # return the corresponding fitted OD value
-
-        } else {tb.result$fit.max.y <- max(gcdata2$fit)}
+        } else {
+          tb.result$fit.max.y <- max(gcdata2$fit)
+        }
       } else {
         tb.result$fit.max.y <- max(gcdata2$fit)
-        message("No difference smaller than the threshold. May consider a larger threshold.")}
+      }
 
       tb.result$fit.max.y.time <- gcdata2$time[gcdata2$fit == tb.result$fit.max.y][1]               # record time of max y for all scenario
 
+      if (tb.result$fit.max.y.time == max(gcdata2$time)){
+        message(paste0("max y time is equal to the largest value of \"", time.name, "\""))
+      }
+
 
       ## clean output ##----
-      colnames(tb.result) <- c("Peak growth rate", "Peak growth time", "Lag time", "Max y (fit)", "Max y time (fit)", "Doubling time")
+      colnames(tb.result) <- c("peak growth rate", "peak growth time", "doubling time", "lag time", "max y", "max y time")
 
       output <- list(estimates = tb.result,
                      model = curve,
@@ -125,7 +131,4 @@ ipg_singlesample <- function(df.input, time.name, y.name, max.y.select = 0.2/100
                      fitted = gcdata2 %>% dplyr::select(time, fit))
 
       return(output)
-
-  # }
-
 }

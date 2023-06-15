@@ -30,8 +30,7 @@ This function estimates growth parameters for a dataset with multiple samples. T
 The function uses the same approach to estimate growth parameters as in \code{ipg_singlesample()}.
 }
 \examples{
+library(dplyr)
 data <- growthrates::bactgrowth
 out.multisample <- ipg_multisample(data, c("strain", "conc"), "time", "value", 0.2/100)
-
-
 }
