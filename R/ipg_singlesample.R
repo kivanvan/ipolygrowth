@@ -1,24 +1,29 @@
 #' @title Growth parameter estimates for single sample
 #'
 #' @description
-#' This function estimates growth parameters for a single sample. Technical replicates are allowed in the dataset.
+#' This function estimates growth parameters for a single (biological) sample. Technical replicates (multiple time series) are allowed.
 #'
-#' @param data Input data containing the time and dependent variable from a single sample. Data needs to be in long format.
-#' @param time.name Name of the time variable
-#' @param y.name Name of the dependent variable
-#' @param epsilon A threshold for maximum detection of dependent variable in exponential phase. Default is 0.2%.
-#' This number will be multiplied by the range of the dependent variable to establish a threshold for maximum detection.
+#' @param data Input data frame containing the time and dependent variable (y) from a single biological sample.
+#' Data needs to be in long format (i.e. one row per time point).
+#' Remove rows with missing in the dependent variable (y).
+#' @param time.name Name of the time variable. The variable needs to be numeric.
+#' @param y.name Name of the dependent variable (y). The variable needs to be numeric.
+#' @param epsilon Convergence threshold for max y time calculation.
+#' The input represents the fraction of the range of the observed dependent variable (y).
+#' The input needs to be between 0 and 1, and a small value is recommended. Default is 0.2%.
 #'
 #' @details
-#' This function fits a 4th-degree polynomial model on input data. Peak growth time is first determined by the second derivative of model.
-#' Peak growth rate is then calculated as the first derivative at peak growth time.
-#' Doubling time at the peak growth is calculated using the equation: \eqn{\frac{ln(2)}{peak\ growth\ rate}}.
-#' The lag time is estimated as the time when the line of intercept from the polynomial model intersects with the linear line of peak growth at peak growth time.
-#' Difference in fitted value of y between two successive time intervals is compared to the selected threshold (the input percentage * range of y) sequentially to estimate the maximum of y and its time.
-#'
+#' This function calculates growth curve parameters for a single sample.
+#' A 4th degree polynomial is fit to the input data using ordinary least squares estimation.
+#' Peak growth time is identified using the second derivative of the estimated polynomial function.
+#' Peak growth rate is calculated using the first derivative at peak growth time.
+#' Doubling time at peak growth is calculated using the equation: ln(2)/peak growth rate .
+#' Lag time is determined using linear interpolation of the peak growth rate to identify the start of the exponential growth phase.
+#' Max y time is identified by convergence of the dependent variable where the growth curve reaches an asymptote, with convergence threshold epsilon.
+#' Max y is the value of the fitted polynomial function at max y time.
 #'
 #' @return A list that contains a table of estimates, the polynomial model, a table of beta coefficients, and a table of fitted values.
-#' Growth parameters include peak growth rate, peak growth time, lag time, max y (fit), max y time (fit), and doubling time at the peak growth.
+#' Growth parameters include peak growth rate, peak growth time, doubling time (at the peak growth), lag time, max y, and max y time.
 #'
 #' @importFrom rlang .data
 #'
@@ -26,7 +31,7 @@
 #' library(dplyr)
 #' data <- growthrates::bactgrowth
 #' df.singlesample <- data %>% dplyr::filter(strain == "D", conc == 0)
-#' out.singlesample <- ipg_singlesample(df.singlesample, "time", "value")
+#' out.singlesample <- ipg_singlesample(data = df.singlesample, time.name = "time", y.name = "value")
 #' @export
 #'
 #'
@@ -35,6 +40,12 @@ ipg_singlesample <- function(data, time.name, y.name, epsilon = 0.2/100) {
   stopifnot("Y must be a numeric variable" = is.numeric(data[[y.name]]))
   stopifnot("Time is not found in the data" = !is.null(data[[time.name]]))
   stopifnot("Time must be a numeric variable" = is.numeric(data[[time.name]]))
+  tryCatch(stopifnot(epsilon>0, epsilon<1),
+           error = function(e) {
+             e$message <- paste("epsilon is outside the recommended range (0-1)")
+             print(e$class)
+             stop(e)
+             })
 
   time <- fit <- NULL                                                                               # to avoid notes from CRAN check
 

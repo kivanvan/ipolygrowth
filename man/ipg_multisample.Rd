@@ -4,27 +4,31 @@
 \alias{ipg_multisample}
 \title{Growth parameter estimates for multiple samples}
 \usage{
-ipg_multisample(df.input, factors, time.name, y.name, max.y.select)
+ipg_multisample(data, id, time.name, y.name, epsilon = 0.2/100)
 }
 \arguments{
-\item{df.input}{Input data containing the time and dependent variable from a single sample. Data needs to be in long format.
-Remove rows with missing in the dependent variable.}
+\item{data}{Input data frame containing the time and dependent variable (y) of multiple biological samples.
+Data needs to be in long format (i.e. one row per time point per sample).
+Remove rows with missing in the dependent variable (y).}
 
-\item{factors}{Sample identifier(s). When exists more than one identifier, put a vector of variable names of the identifiers.}
+\item{id}{Unique identifier to indicate each biological sample.}
 
-\item{time.name}{Name of the time variable}
+\item{time.name}{Name of the time variable. The variable needs to be numeric.}
 
-\item{y.name}{Name of the dependent variable}
+\item{y.name}{Name of the dependent variable (y). The variable needs to be numeric.}
 
-\item{max.y.select}{A threshold for maximum detection of dependent variable in exponential phase. Default is 0.2\%.
-This number will be multiplied by the range of the dependent variable to establish a threshold for maximum detection.}
+\item{epsilon}{Convergence threshold for max y time calculation.
+The input represents the fraction of the range of the observed dependent variable (y).
+It needs to be between 0 and 1, and a small value is recommended.
+The input can be either a single value or a vector of different values for multiple samples.
+Default is 0.2\% for all samples.}
 }
 \value{
-A list that contains a table of estimates, polynomial models, a table of beta coefficients, and a table of fitted values, all by sample identifier(s).
-Growth parameters include peak growth rate, peak growth time, lag time, max y (fit), max y time (fit), and doubling time at the peak growth.
+A list that contains a table of estimates, polynomial models, a table of beta coefficients, and a table of fitted values, all by sample ID.
+Growth parameters include peak growth rate, peak growth time, doubling time (at the peak growth), lag time, max y, and max y time.
 }
 \description{
-This function estimates growth parameters for a dataset with multiple samples. Technical replicates are allowed in the dataset.
+This function estimates growth parameters for multiple (biological) samples. Technical replicates (multiple time series) are allowed.
 }
 \details{
 The function uses the same approach to estimate growth parameters as in \code{ipg_singlesample()}.
@@ -32,5 +36,6 @@ The function uses the same approach to estimate growth parameters as in \code{ip
 \examples{
 library(dplyr)
 data <- growthrates::bactgrowth
-out.multisample <- ipg_multisample(data, c("strain", "conc"), "time", "value", 0.2/100)
+data <- data \%>\% mutate(id = paste(strain, conc, sep = "-"))
+out.multisample <- ipg_multisample(data, "id", "time", "value", 0.2/100)
 }

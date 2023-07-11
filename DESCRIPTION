@@ -1,5 +1,5 @@
 Package: ipolygrowth
-Title: Bacterial Growth Curve Parameters from Polynomial Model
+Title: Individual growth curve parameter calculation using polynomial functions
 Version: 0.0.0.9000
 Authors@R: c(
     person("Jifan", "Wang", , "jifan.wang@tufts.edu", role = c("aut", "cre"),
@@ -7,8 +7,7 @@ Authors@R: c(
     person("Kathryn", "Barger", role = "aut"))
 Depends: 
     R (>= 3.4.0)
-Description: Taking data from microplate reader and estimating bacterial grwoth parameters 
-  using a 4th-degree polynomial regression model.
+Description: Calculation of bacterial growth curve parameters using fourth degree polynomials.
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
