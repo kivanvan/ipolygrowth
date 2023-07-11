@@ -7,7 +7,7 @@ Authors@R: c(
     person("Kathryn", "Barger", role = "aut"))
 Depends: 
     R (>= 3.4.0)
-Description: Calculation of bacterial growth curve parameters using fourth degree polynomials.
+Description: Calculation of bacterial growth curve parameters using fourth degree polynomial functions.
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

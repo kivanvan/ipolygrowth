@@ -84,7 +84,7 @@ Now we specify the data frame name, time variable, and y variable in the `ipg_si
 out.singlesample <- ipg_singlesample(data = df.singlesample, time.name = "time", y.name = "value")
 
 out.singlesample$estimates %>%
-  kable %>% kable_styling("striped", full_width = F)
+  kable %>% kable_styling("striped", full_width = F)  # table formatting for rmarkdown
 ```
 
 \newline  
@@ -128,7 +128,7 @@ table(df.gr2$strain, df.gr2$conc)
 unique(df.gr2$id)
 ```
 
-The input data for`ipg_multisample()` is the same long format data used for `ipg_singlesample()` with the addition of the ID variable.  `epsilon` is specified as a vector of values, one for each sample, thus allowing different thresholds for each sample.
+The input data for`ipg_multisample()` is the same long format data used for `ipg_singlesample()` with the addition of the ID variable.  `epsilon` is specified as a single value that will be applied across samples. It can also be input as a vector of values, one for each sample, thus allowing different thresholds for each sample.
 
 ```{r, results='asis'}
 out.multi.f <- ipg_multisample(data = df.gr2, id = "id", time.name = "time", y.name = "value", epsilon = 0.2/100)
