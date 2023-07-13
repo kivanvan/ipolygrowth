@@ -20,21 +20,29 @@ knitr::opts_chunk$set(
 
 The goal of ipolygrowth is to calculate bacterial growth curve parameters using fourth degree polynomial functions. Functions are available for a single biological sample or multiple samples.
 
+
 ## Installation
 
-The package will be submitted to CRAN. For now, you can install the ipolygrowth from [GitHub](https://github.com/) with:
+The package can be installed from CRAN with:
+
+```{r, eval=FALSE}
+install.packages("ipolygrowth")
+```
+
+or the development version from [GitHub](https://github.com/) with:
 
 ``` {r, eval = FALSE}
 # install.packages("devtools")
 devtools::install_github("https://github.com/kivanvan/ipolygrowth", upgrade = F, quiet = T)
 ```
 
+
 ## Example
 
-The example data comes from the [growthrates](https://cran.r-project.org/web/packages/growthrates/index.html) package.
-This is a basic example which shows you how to use the single sample function:
+The example data comes from the [growthrates](https://CRAN.R-project.org/package=growthrates) package.  
+This is a basic example which shows you how to use the single sample function:  
 
-```{r example}
+```{r example, message=FALSE}
 library(ipolygrowth)
 library(dplyr)
 

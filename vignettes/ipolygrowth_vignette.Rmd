@@ -1,10 +1,10 @@
 ---
-title: "Using polygrowth for bacterial growth estimation"
+title: "Using ipolygrowth for bacterial growth estimation"
 output: 
   rmarkdown::html_vignette:
     toc: true
 vignette: >
-  %\VignetteIndexEntry{Using polygrowth for bacterial growth estimation}
+  %\VignetteIndexEntry{Using ipolygrowth for bacterial growth estimation}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -37,7 +37,7 @@ library(kableExtra) # for RMarkdown table output
 
 We will use the bacterial growth data from the R package [growthrates](https://CRAN.R-project.org/package=growthrates) for demonstration. This data contains growth data of 3 bacteria strains and 12 antibiotics tetracycline concentration levels. Each strain-concentration combination has 2 replicates. In each replicate, the growth of bacteria is measured 31 times (i.e. 31 time points in the time series). For our demonstration, we consider each strain-concentration combination as a sample (i.e. a biological replicate) and each replicate as a technical replicate.  
 
-For more details about this data, see https://cran.r-project.org/web/packages/growthrates/vignettes/Introduction.html.  
+For more details about this data, see https://CRAN.R-project.org/package=growthrates.  
 
 Let's load the data and check its structure.  
 

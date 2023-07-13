@@ -12,8 +12,13 @@ available for a single biological sample or multiple samples.
 
 ## Installation
 
-The package will be submitted to CRAN. For now, you can install the
-ipolygrowth from [GitHub](https://github.com/) with:
+The package can be installed from CRAN with:
+
+``` r
+install.packages("ipolygrowth")
+```
+
+or the development version from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
@@ -23,21 +28,13 @@ devtools::install_github("https://github.com/kivanvan/ipolygrowth", upgrade = F,
 ## Example
 
 The example data comes from the
-[growthrates](https://cran.r-project.org/web/packages/growthrates/index.html)
-package. This is a basic example which shows you how to use the single
-sample function:
+[growthrates](https://CRAN.R-project.org/package=growthrates) package.  
+This is a basic example which shows you how to use the single sample
+function:
 
 ``` r
 library(ipolygrowth)
 library(dplyr)
-#> 
-#> Attaching package: 'dplyr'
-#> The following objects are masked from 'package:stats':
-#> 
-#>     filter, lag
-#> The following objects are masked from 'package:base':
-#> 
-#>     intersect, setdiff, setequal, union
 
 # example data comes from the growthrates package (available on CRAN)
 data <- growthrates::bactgrowth
@@ -47,7 +44,6 @@ df.singlesample <- data %>% dplyr::filter(strain == "D", conc == 0)
 
 # calculate growth curve parameters using ipolygrowth function
 out.singlesample <- ipg_singlesample(data = df.singlesample, time.name = "time", y.name = "value")
-#> max y time is equal to the largest value of "time"
 ```
 
 The output is a list, including a table of growth parameter estimates,

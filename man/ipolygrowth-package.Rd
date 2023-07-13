@@ -4,7 +4,7 @@
 \name{ipolygrowth-package}
 \alias{ipolygrowth}
 \alias{ipolygrowth-package}
-\title{ipolygrowth: Individual growth curve parameter calculation using polynomial functions}
+\title{ipolygrowth: Individual Growth Curve Parameter Calculation using Polynomial Functions}
 \description{
 Calculation of bacterial growth curve parameters using fourth degree polynomial functions.
 }
