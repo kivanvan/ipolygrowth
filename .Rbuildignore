@@ -2,3 +2,5 @@
 ^LICENSE\.md$
 ^ipolygrowth\.Rproj$
 ^README\.Rmd$
+^cran-comments\.md$
+^revdep$

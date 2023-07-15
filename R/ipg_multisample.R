@@ -12,7 +12,7 @@
 #' @param epsilon Convergence threshold for max y time calculation.
 #' The input represents the fraction of the range of the observed dependent variable (y).
 #' It needs to be between 0 and 1, and a small value is recommended.
-#' The input can be either a single value or a vector of different values for multiple samples.
+#' The input can be either a single value or a vector of different values (in the same length and order as id) for multiple samples.
 #' Default is 0.2% for all samples.
 #'
 #' @details
