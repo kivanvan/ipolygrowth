@@ -6,7 +6,7 @@
 \alias{ipolygrowth-package}
 \title{ipolygrowth: Individual Growth Curve Parameter Calculation using Polynomial Functions}
 \description{
-Calculation of bacterial growth curve parameters using fourth degree polynomial functions.
+Calculation of key bacterial growth curve parameters using fourth degree polynomial functions. Six growth curve parameters are provided including peak growth rate, doubling time, lag time, maximum growth, and etc. 'ipolygrowth' takes time series data from individual biological samples (with technical replicates) or multiple samples.
 }
 \details{
 This package calculates growth curve parameters using fourth degree polynomial functions.
