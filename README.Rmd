@@ -25,7 +25,7 @@ The goal of ipolygrowth is to calculate bacterial growth curve parameters using 
 
 The package can be installed from CRAN with:
 
-```{r, eval=FALSE}
+```{r, eval = FALSE}
 install.packages("ipolygrowth")
 ```
 
@@ -39,16 +39,32 @@ devtools::install_github("https://github.com/kivanvan/ipolygrowth", upgrade = F,
 
 ## Example
 
-The example data comes from the [growthrates](https://CRAN.R-project.org/package=growthrates) package.  
-This is a basic example which shows you how to use the single sample function:  
+Load the packages first.
 
-```{r example, message=FALSE}
+```{r, message = FALSE}
 library(ipolygrowth)
 library(dplyr)
+```
 
+The example data comes from the [growthrates](https://CRAN.R-project.org/package=growthrates) package.  
+
+```{r data}
 # example data comes from the growthrates package (available on CRAN)
+if (!"growthrates" %in% installed.packages()) {install.packages("growthrates")}
 data <- growthrates::bactgrowth
+```
 
+Alternatively, the `bactgrowth.txt` can be downloaded from [here](https://github.com/tpetzoldt/growthrates/tree/master/data). The data can be read using the following code.
+
+```{r alt data, eval = FALSE}
+# Change the "DataPath" to where `bactgrowth.txt` is saved.
+data <- read.table("DataPath/bactgrowth.txt", header = TRUE) %>%
+  mutate(strain = factor(strain, levels = c("D", "R", "T")))
+```
+
+This is a basic example which shows you how to use the single sample function:  
+
+```{r example}
 # subset data to a single biological sample
 df.singlesample <- data %>% dplyr::filter(strain == "D", conc == 0)
 
@@ -56,10 +72,11 @@ df.singlesample <- data %>% dplyr::filter(strain == "D", conc == 0)
 out.singlesample <- ipg_singlesample(data = df.singlesample, time.name = "time", y.name = "value")
 ```
 
+
 The output is a list, including a table of growth parameter estimates, the polynomial model, a table of beta coefficients, and a table of fitted values. Growth parameters include peak growth rate, peak growth time, doubling time (at the peak growth), lag time, max y, and max y time. View the results by calling each list element like:   
 
 ```{r view reults}
 out.singlesample$estimates
 ```
 
-For more instructions, please refer to the vignette.
+For more instructions, please refer to the [vignette](https://cran.r-project.org/web/packages/ipolygrowth/vignettes/ipolygrowth_vignette.html).
