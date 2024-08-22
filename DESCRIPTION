@@ -2,9 +2,9 @@ Package: ipolygrowth
 Title: Individual Growth Curve Parameter Calculation using Polynomial Functions
 Version: 0.1.2
 Authors@R: c(
-    person("Jifan", "Wang", , "wjifan@hotmail.com", role = c("aut", "cre"),
+    person("Jifan", "Wang", , "wjifan@hotmail.com", role = c("aut", "cre", "cph"),
            comment = c(ORCID = "0000-0001-9720-8913")),
-    person("Kathryn", "Barger", role = "aut"))
+    person("Kathryn", "Barger", "kathrynjbarger@gmail.com", role = c("aut", "cph")))
 Depends: 
     R (>= 3.5.0)
 Description: Calculation of key bacterial growth curve parameters using fourth degree polynomial functions. 
