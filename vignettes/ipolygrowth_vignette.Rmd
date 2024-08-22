@@ -44,8 +44,8 @@ The `bactgrowth.txt` can be loaded from the `growthrates` package directly or be
 ```{r}
 if (!"growthrates" %in% installed.packages()) {install.packages("growthrates")}
 df.gr <- growthrates::bactgrowth
-# Alternative way. Change the "DataPath" to where `bactgrowth.txt` is saved.
-# data <- read.table("DataPath/bactgrowth.txt", header = TRUE) %>%
+# Download the `bactgrowth.txt` to the directory of your script. Then run:
+# data <- read.table("bactgrowth.txt", header = TRUE) %>%
   # mutate(strain = factor(strain, levels = c("D", "R", "T")))
 
 str(df.gr)
