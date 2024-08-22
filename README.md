@@ -43,13 +43,13 @@ if (!"growthrates" %in% installed.packages()) {install.packages("growthrates")}
 data <- growthrates::bactgrowth
 ```
 
-Alternatively, the `bactgrowth.txt` can be downloaded from
-[here](https://github.com/tpetzoldt/growthrates/tree/master/data). The
-data can be read using the following code.
+Alternatively, download the `bactgrowth.txt` from
+[here](https://github.com/tpetzoldt/growthrates/tree/master/data) to the
+directory of your script. The data can then be read using the following
+code.
 
 ``` r
-# Change the "DataPath" to where `bactgrowth.txt` is saved.
-data <- read.table("DataPath/bactgrowth.txt", header = TRUE) %>%
+data <- read.table("bactgrowth.txt", header = TRUE) %>%
   mutate(strain = factor(strain, levels = c("D", "R", "T")))
 ```
 
@@ -79,5 +79,6 @@ out.singlesample$estimates
 #> 1         30
 ```
 
-For more instructions, please refer to the
-[vignette](https://cran.r-project.org/web/packages/ipolygrowth/vignettes/ipolygrowth_vignette.html).
+For more instructions and the expected output of vignette, please refer
+to the [vignette on
+CRAN](https://cran.r-project.org/web/packages/ipolygrowth/vignettes/ipolygrowth_vignette.html).
