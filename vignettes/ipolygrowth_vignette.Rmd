@@ -32,6 +32,8 @@ library(ggplot2)
 library(kableExtra) # for RMarkdown table output
 ```
 
+Expected outputs are shown in the rendered version of the [vignette](https://cran.r-project.org/web/packages/ipolygrowth/vignettes/ipolygrowth_vignette.html) available on the [ipolygrowth](https://CRAN.R-project.org/package=ipolygrowth) on CRAN .
+
 
 ### Example data
 
