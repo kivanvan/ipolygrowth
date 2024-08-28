@@ -1,3 +1,13 @@
+## Resubmission--1.0.0
+
+This is a resubmission. Most changes are made to respond to reviewers' comments for the publication of this package. In this version I have:
+
+* Added an alternative method to download and read example data in vignette per reviewers' request.  
+
+* Added a link to the CRAN page in vignette for expected output per reviewers' request.
+
+* Updated authors' email address in the DESCRIPTION.  
+
 ## Resubmission--0.1.2
 
 This is a resubmission. In this version I have:

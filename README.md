@@ -81,4 +81,4 @@ out.singlesample$estimates
 
 For more instructions and the expected output of vignette, please refer
 to the [vignette on
-CRAN](https://cran.r-project.org/web/packages/ipolygrowth/vignettes/ipolygrowth_vignette.html).
+CRAN](https://CRAN.R-project.org/package=ipolygrowth).
